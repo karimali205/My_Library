@@ -1,12 +1,12 @@
 /**
- * smart-add.js - Smart Camera Barcode Scanner & Metadata Auto-fetch
- * Supports continuous batch scan mode, Open Library/Google Books fetch,
- * review preview modal, and "Do I own this?" fast retail check mode.
+ * smart-add.js - Smart Camera Barcode Scanner & Multi-Registry Book Search
+ * Supports continuous batch scan, Open Library Search & Google Books fallback,
+ * Arabic-Indic numeral normalization, multiple editions selection, and prefilled manual entry.
  */
 
 import { getAllBooks, saveBook } from '../db.js';
 import { t, isRTL, normalizeArabic } from '../i18n.js';
-import { BarcodeScanner, fetchBookMetadataByISBN } from '../utils/barcode.js';
+import { BarcodeScanner, searchBookCatalog, normalizeBarcodeDigits } from '../utils/barcode.js';
 
 let isContinuousMode = false;
 let scannerInstance = null;
@@ -15,7 +15,7 @@ export async function renderSmartAddView(container, navigateTo) {
   const allBooks = await getAllBooks();
 
   container.innerHTML = `
-    <div class="view-container" style="max-width: 800px;">
+    <div class="view-container" style="max-width: 850px;">
       <div style="margin-bottom: var(--space-lg);">
         <h2 style="color: var(--accent-gold); margin-bottom: 4px;">⚡ ${t('smartAddTitle')}</h2>
         <p style="font-size: 0.9rem; color: var(--text-muted);">${t('continuousScanHelp')}</p>
@@ -26,9 +26,12 @@ export async function renderSmartAddView(container, navigateTo) {
         <!-- Card 1: Camera Barcode Scan -->
         <div class="stat-card" style="padding: var(--space-lg);">
           <h3 style="font-size: 1.15rem; color: var(--accent-gold); margin-bottom: 6px;">📷 ${t('barcodeScannerTitle')}</h3>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--space-md);">
-            Point your mobile camera at the ISBN barcode on the back cover of any book.
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+            وجّه كاميرا الهاتف أو اللابتوب نحو الباركود (EAN-13) في ظهر الكتاب.
           </p>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: var(--space-md); line-height: 1.4;">
+            💡 <em>نصيحة: كاميرات الهواتف تدعم التركيز التلقائي الأسرع. على اللابتوب ضع الباركود على مسافة 15 سم بإضاءة جيدة.</em>
+          </div>
           <div style="display: flex; gap: var(--space-xs); align-items: center; margin-bottom: var(--space-md);">
             <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px; cursor: pointer;">
               <input type="checkbox" id="check-continuous-mode" ${isContinuousMode ? 'checked' : ''}>
@@ -47,7 +50,7 @@ export async function renderSmartAddView(container, navigateTo) {
             ${t('checkOwnershipHelp')}
           </p>
           <div style="display: flex; gap: var(--space-xs);">
-            <input type="text" id="input-ownership-check" class="form-control" placeholder="Scan or type ISBN / Title...">
+            <input type="text" id="input-ownership-check" class="form-control" placeholder="اكتب الردمك أو اسم الكتاب...">
             <button class="btn btn-secondary" id="btn-run-ownership-check">${t('search')}</button>
           </div>
           <div id="ownership-result-box" style="margin-top: var(--space-sm); min-height: 24px;"></div>
@@ -61,28 +64,33 @@ export async function renderSmartAddView(container, navigateTo) {
           <div class="scanner-reticle"></div>
           <div class="scanner-laser-overlay"></div>
         </div>
-        <div style="text-align: center; margin-top: var(--space-sm);">
+        <div style="text-align: center; margin-top: var(--space-sm); display: flex; justify-content: center; gap: var(--space-sm);">
           <button class="btn btn-secondary btn-sm" id="btn-stop-camera">✕ ${t('stopScanner')}</button>
         </div>
       </div>
 
-      <!-- Manual ISBN Lookup Box -->
+      <!-- Universal Search / ISBN Lookup Box -->
       <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--card-shadow);">
-        <h3 style="font-size: 1.1rem; color: var(--accent-gold); margin-bottom: var(--space-xs);">
-          ⌨️ ${t('manualLookupTitle')}
+        <h3 style="font-size: 1.15rem; color: var(--accent-gold); margin-bottom: var(--space-xs);">
+          ⌨️ البحث بالردمك (ISBN) أو عنوان الكتاب أو المؤلف
         </h3>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-md);">
-          Fetches covers, descriptions, publishers and authors directly from global library registries.
+          يدعم الأرقام الإنجليزية والعربية (مثل: 9789770928171 أو ٩٧٨٩٧٧٠٩٢٨١٧١)، أو اكتب اسم الكتاب (مثل: يوتوبيا، شآبيب، 1984).
         </p>
+        
         <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-          <input type="text" id="input-manual-isbn" class="form-control" placeholder="e.g. 9789770921004 or 9780441013593" style="flex: 1; min-width: 220px;">
+          <input type="text" id="input-manual-isbn" class="form-control" placeholder="أدخل رقم الردمك أو عنوان الكتاب..." style="flex: 1; min-width: 240px;">
           <button class="btn btn-primary" id="btn-fetch-manual">
-            ${t('lookupBtn')}
+            🔍 ${t('lookupBtn')}
           </button>
         </div>
+
         <div id="lookup-spinner" style="display: none; margin-top: var(--space-md); color: var(--accent-gold); font-size: 0.9rem;">
-          ⌛ ${t('searchingApis')}
+          ⌛ جارٍ البحث في فهارس Open Library و Google Books...
         </div>
+
+        <!-- Search Results Multi-List Mount -->
+        <div id="search-results-list" style="margin-top: var(--space-md); display: none;"></div>
       </div>
 
       <!-- Metadata Preview / Review Modal Mount -->
@@ -105,14 +113,13 @@ export async function renderSmartAddView(container, navigateTo) {
     cameraWrapper.style.display = 'block';
     try {
       scannerInstance = new BarcodeScanner(videoEl, async (detectedCode) => {
-        // Sound / haptic feedback if available
         if (navigator.vibrate) navigator.vibrate(80);
-        handleDetectedISBN(detectedCode);
+        handleSearchOrISBN(detectedCode);
       });
       await scannerInstance.start();
       btnToggleCamera.style.display = 'none';
     } catch (err) {
-      alert('Camera access failed: ' + err.message);
+      alert('تعذر فتح الكاميرا: ' + err.message + '\nيمكنك كتابة رقم الردمك أو عنوان الكتاب في خانة البحث أدناه.');
       cameraWrapper.style.display = 'none';
       btnToggleCamera.style.display = 'block';
     }
@@ -131,13 +138,13 @@ export async function renderSmartAddView(container, navigateTo) {
   const btnFetchManual = container.querySelector('#btn-fetch-manual');
   const inputManualIsbn = container.querySelector('#input-manual-isbn');
   btnFetchManual.addEventListener('click', () => {
-    const isbn = inputManualIsbn.value.trim();
-    if (isbn) handleDetectedISBN(isbn);
+    const q = inputManualIsbn.value.trim();
+    if (q) handleSearchOrISBN(q);
   });
   inputManualIsbn.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-      const isbn = inputManualIsbn.value.trim();
-      if (isbn) handleDetectedISBN(isbn);
+      const q = inputManualIsbn.value.trim();
+      if (q) handleSearchOrISBN(q);
     }
   });
 
@@ -151,10 +158,11 @@ export async function renderSmartAddView(container, navigateTo) {
     if (!q) return;
 
     const normQ = normalizeArabic(q);
-    const cleanIsbn = q.replace(/[^0-9X]/gi, '');
+    const cleanIsbn = normalizeBarcodeDigits(q);
 
     const found = allBooks.find(b => {
-      if (cleanIsbn && (b.isbn || '').replace(/[^0-9X]/gi, '') === cleanIsbn) return true;
+      const bIsbn = normalizeBarcodeDigits(b.isbn || '');
+      if (cleanIsbn && bIsbn === cleanIsbn) return true;
       if (normQ && normalizeArabic(b.title).includes(normQ)) return true;
       return false;
     });
@@ -163,7 +171,7 @@ export async function renderSmartAddView(container, navigateTo) {
       ownershipResultBox.innerHTML = `
         <div style="padding: 8px 12px; background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; border-radius: var(--radius-md); color: #22c55e; font-size: 0.85rem;">
           ✓ <strong>${t('ownershipYes')}</strong><br>
-          "${found.title}" by ${(found.authors || []).join(', ')} (${found.location?.room || 'Library'} • ${found.location?.cabinet || ''})
+          "${found.title}" للمؤلف ${(found.authors || []).join(', ')} (${found.location?.room || 'المكتبة'} • ${found.location?.cabinet || ''})
         </div>
       `;
     } else {
@@ -180,26 +188,117 @@ export async function renderSmartAddView(container, navigateTo) {
     if (e.key === 'Enter') checkOwnership();
   });
 
-  // Handle Detected ISBN
-  async function handleDetectedISBN(isbn) {
+  // Handle Search Query or ISBN
+  async function handleSearchOrISBN(rawQuery) {
     const spinner = container.querySelector('#lookup-spinner');
+    const resultsContainer = container.querySelector('#search-results-list');
+    resultsContainer.style.display = 'none';
+    resultsContainer.innerHTML = '';
+
     if (spinner) spinner.style.display = 'block';
 
     try {
-      const metadata = await fetchBookMetadataByISBN(isbn);
+      const booksFound = await searchBookCatalog(rawQuery);
       if (spinner) spinner.style.display = 'none';
 
-      // Check if duplicate
-      const duplicate = allBooks.find(b => (b.isbn || '').replace(/[^0-9X]/gi, '') === metadata.isbn);
-      showReviewModal(metadata, duplicate);
+      if (booksFound.length === 1) {
+        // Single exact match -> open review modal
+        const book = booksFound[0];
+        const duplicate = allBooks.find(b => {
+          const bIsbn = normalizeBarcodeDigits(b.isbn || '');
+          const queryIsbn = normalizeBarcodeDigits(book.isbn || '');
+          return (queryIsbn && bIsbn === queryIsbn) || normalizeArabic(b.title) === normalizeArabic(book.title);
+        });
+        showReviewModal(book, duplicate);
+      } else if (booksFound.length > 1) {
+        // Multiple matches -> show list so user can choose
+        renderMultipleResults(booksFound, rawQuery);
+      } else {
+        // 0 matches found online
+        renderNoResultsFallback(rawQuery);
+      }
     } catch (err) {
       if (spinner) spinner.style.display = 'none';
-      // If offline or not found, navigate to manual form prefilled with ISBN!
-      if (confirm(`Book metadata could not be fetched automatically: ${err.message}.\n\nWould you like to open the manual entry form with this ISBN prefilled?`)) {
-        if (scannerInstance) scannerInstance.stop();
-        navigateTo('book-form', { prefill: { isbn } });
-      }
+      renderNoResultsFallback(rawQuery, err.message);
     }
+  }
+
+  function renderMultipleResults(booksList, rawQuery) {
+    const listEl = container.querySelector('#search-results-list');
+    listEl.style.display = 'block';
+    listEl.innerHTML = `
+      <div style="border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
+        <h4 style="color: var(--accent-gold); margin-bottom: var(--space-sm);">
+          📚 تم العثور على (${booksList.length}) طبعات / نتائج. اختر الكتاب المطلوب:
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
+          ${booksList.map((b, idx) => `
+            <div class="stat-card" style="padding: var(--space-sm); display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); cursor: pointer;" data-result-idx="${idx}">
+              <div style="display: flex; gap: var(--space-sm); align-items: center; min-width: 0;">
+                <div style="width: 44px; height: 62px; flex-shrink: 0; background: var(--bg-secondary); border-radius: 4px; overflow: hidden;">
+                  ${b.coverImage ? `<img src="${b.coverImage}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:1.2rem;">📖</div>'}
+                </div>
+                <div style="min-width: 0;">
+                  <h4 style="font-size: 0.95rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(b.title)}</h4>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); margin: 2px 0 0 0;">
+                    ${escapeHtml((b.authors || []).join(', '))} ${b.publicationYear ? `(${b.publicationYear})` : ''} ${b.publisher ? `• ${escapeHtml(b.publisher)}` : ''}
+                  </p>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-brass" style="flex-shrink: 0;">
+                اختيار هذا الكتاب ✓
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    listEl.querySelectorAll('[data-result-idx]').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.dataset.resultIdx, 10);
+        const selected = booksList[idx];
+        const duplicate = allBooks.find(b => {
+          const bIsbn = normalizeBarcodeDigits(b.isbn || '');
+          const sIsbn = normalizeBarcodeDigits(selected.isbn || '');
+          return (sIsbn && bIsbn === sIsbn) || normalizeArabic(b.title) === normalizeArabic(selected.title);
+        });
+        showReviewModal(selected, duplicate);
+      });
+    });
+  }
+
+  function renderNoResultsFallback(rawQuery, errorMsg = '') {
+    const listEl = container.querySelector('#search-results-list');
+    listEl.style.display = 'block';
+    
+    const cleanIsbn = normalizeBarcodeDigits(rawQuery);
+    const isIsbn = /^(\d{10}|\d{13})$/.test(cleanIsbn);
+
+    listEl.innerHTML = `
+      <div style="border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
+        <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid #f59e0b; border-radius: var(--radius-md); padding: var(--space-md); color: #f59e0b;">
+          <strong>ℹ️ لم يتم العثور على بيانات تلقائية لهذا البحث في الفهارس العالمية المفتوحة.</strong>
+          <p style="font-size: 0.85rem; color: var(--text-primary); margin: 6px 0 var(--space-sm) 0;">
+            هذا أمر طبيعي تماماً مع بعض الروايات والطبعات العربية والمصرية التي تصدر برقم إيداع محلي غير مفهرس في المكتبات الغربية.
+          </p>
+          <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+            <button class="btn btn-sm btn-primary" id="btn-prefill-manual">
+              ✍️ إدخال بيانات الكتاب مع حفظ "${escapeHtml(rawQuery)}"
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    listEl.querySelector('#btn-prefill-manual').addEventListener('click', () => {
+      if (scannerInstance) scannerInstance.stop();
+      if (isIsbn) {
+        navigateTo('book-form', { prefill: { isbn: cleanIsbn } });
+      } else {
+        navigateTo('book-form', { prefill: { title: rawQuery } });
+      }
+    });
   }
 
   function showReviewModal(metadata, duplicate) {
@@ -220,15 +319,16 @@ export async function renderSmartAddView(container, navigateTo) {
 
             <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
               <div style="width: 100px; height: 145px; border-radius: 4px; overflow: hidden; background: #000; flex-shrink: 0;">
-                ${metadata.coverImage ? `<img src="${metadata.coverImage}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;">No Cover</div>'}
+                ${metadata.coverImage ? `<img src="${metadata.coverImage}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;">غلاف افتراضي</div>'}
               </div>
               <div style="flex: 1; min-width: 200px;">
                 <h4 style="font-size: 1.15rem; margin-bottom: 2px;">${escapeHtml(metadata.title)}</h4>
                 <p style="font-size: 0.85rem; color: var(--accent-gold); margin-bottom: 6px;">${escapeHtml((metadata.authors || []).join(', '))}</p>
                 <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px;">
-                  <span>ISBN: ${escapeHtml(metadata.isbn)}</span>
-                  <span>${escapeHtml(metadata.publisher)} (${escapeHtml(metadata.publicationYear)})</span>
-                  ${metadata.pageCount ? `<span>${escapeHtml(metadata.pageCount)} pages</span>` : ''}
+                  ${metadata.isbn ? `<span>ردمك (ISBN): ${escapeHtml(metadata.isbn)}</span>` : ''}
+                  ${metadata.publisher ? `<span>دار النشر: ${escapeHtml(metadata.publisher)}</span>` : ''}
+                  ${metadata.publicationYear ? `<span>سنة النشر: ${escapeHtml(metadata.publicationYear)}</span>` : ''}
+                  ${metadata.pageCount ? `<span>عدد الصفحات: ${escapeHtml(metadata.pageCount)}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -241,10 +341,10 @@ export async function renderSmartAddView(container, navigateTo) {
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary btn-sm" id="btn-edit-more-review">
-              ✏️ ${t('edit')} ${t('details')}
+              ✏️ تعديل وإكمال التفاصيل
             </button>
             <button class="btn btn-primary btn-sm" id="btn-confirm-add-library">
-              ✓ ${t('saveToLibrary')}
+              ✓ إضافة فورية للرفوف
             </button>
           </div>
         </div>
@@ -268,11 +368,11 @@ export async function renderSmartAddView(container, navigateTo) {
         authors: metadata.authors || [],
         publisher: metadata.publisher || '',
         publicationYear: metadata.publicationYear || '',
-        isbn: metadata.isbn,
-        language: metadata.language || 'en',
+        isbn: metadata.isbn || '',
+        language: metadata.language || (isArabic(metadata.title) ? 'ar' : 'en'),
         pageCount: metadata.pageCount,
         coverImage: metadata.coverImage || '',
-        category: metadata.category || 'General',
+        category: metadata.category || 'literature',
         review: metadata.description || ''
       };
       await saveBook(newBook);
@@ -280,14 +380,17 @@ export async function renderSmartAddView(container, navigateTo) {
       mount.innerHTML = '';
 
       if (isContinuousMode) {
-        // Stay in continuous scanning mode
-        alert(`Saved '${metadata.title}'! Ready for next book.`);
+        alert(`تم حفظ "${metadata.title}" بنجاح! وجّه الكاميرا للكتاب التالي.`);
       } else {
         if (scannerInstance) scannerInstance.stop();
         navigateTo('library');
       }
     });
   }
+}
+
+function isArabic(text) {
+  return /[\u0600-\u06FF]/.test(text || '');
 }
 
 function escapeHtml(str) {
