@@ -1,0 +1,142 @@
+/**
+ * responsive.css - Mobile-first layout adaptations (360px to 4K desktop)
+ * Guarantees minimum 44px touch targets and smooth navigation ergonomics.
+ */
+
+/* ==========================================================================
+   MOBILE FIRST (Default <= 767px)
+   ========================================================================== */
+@media (max-width: 767px) {
+  .d-none-sm {
+    display: none !important;
+  }
+
+  #sidebar {
+    display: none !important;
+  }
+
+  #main-viewport {
+    padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px)); /* Space for bottom nav */
+  }
+
+  .bookshelf-stage {
+    gap: var(--space-md);
+  }
+
+  .shelf-books-row {
+    min-height: 200px;
+    padding: 0 var(--space-xs);
+  }
+
+  /* Compact spines for mobile: 3-4 visible on screen */
+  .book-spine {
+    --base-h: 175px;
+    --base-w: 38px;
+    padding: 6px 2px;
+  }
+
+  .spine-title {
+    font-size: 0.75rem;
+    max-height: 105px;
+  }
+
+  .shelf-header {
+    padding: 0 var(--space-xs) 4px var(--space-xs);
+  }
+
+  .books-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xs);
+  }
+
+  .book-card-body {
+    padding: var(--space-xs);
+  }
+
+  .book-card-title {
+    font-size: 0.85rem;
+  }
+
+  .view-container {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .toolbar-main-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-dialog {
+    max-height: 94vh;
+  }
+}
+
+/* Very narrow devices: 360px phone screens */
+@media (max-width: 380px) {
+  .book-spine {
+    --base-h: 160px;
+    --base-w: 32px;
+  }
+  .books-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .stats-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================================================
+   TABLETS & MEDIUM SCREENS (768px to 1023px)
+   ========================================================================== */
+@media (min-width: 768px) {
+  #bottom-nav {
+    display: none !important;
+  }
+
+  #sidebar {
+    display: flex;
+    width: 240px;
+  }
+
+  #main-viewport {
+    padding-bottom: var(--space-lg);
+  }
+
+  .mobile-brand {
+    display: none;
+  }
+
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .book-spine {
+    --base-h: 210px;
+    --base-w: 48px;
+  }
+}
+
+/* ==========================================================================
+   DESKTOPS & LARGE SCREENS (>= 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+  #sidebar {
+    width: 270px;
+  }
+
+  .books-grid {
+    grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .book-spine {
+    --base-h: 230px;
+    --base-w: 52px;
+  }
+
+  .shelf-books-row {
+    min-height: 250px;
+  }
+}

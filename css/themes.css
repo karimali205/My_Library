@@ -1,0 +1,423 @@
+/**
+ * themes.css - 5 Rich Library Themes with Light & Dark modes
+ * Based purely on CSS variables for seamless switching and customization.
+ */
+
+:root {
+  /* Default Font Fallbacks */
+  --font-ui-ar: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
+  --font-ui-en: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-title-ar: 'Amiri', 'Noto Naskh Arabic', serif;
+  --font-title-en: 'Playfair Display', 'Lora', Georgia, serif;
+
+  /* Spacing */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ==========================================================================
+   1. CLASSIC WOOD THEME (Default cozy warm personal library)
+   ========================================================================== */
+[data-theme="classic-wood"][data-mode="dark"],
+:root:not([data-theme])[data-mode="dark"],
+:root:not([data-theme]):not([data-mode]) {
+  --bg-primary: #1c120c;
+  --bg-secondary: #261810;
+  --bg-surface: #2d1e15;
+  --bg-surface-elevated: #3b281c;
+  --border-color: #4a3224;
+  --border-color-subtle: #382419;
+  
+  --text-primary: #f5ebe0;
+  --text-secondary: #d4c5b9;
+  --text-muted: #9e8979;
+  
+  --accent-gold: #c59b27;
+  --accent-gold-hover: #dbb33f;
+  --accent-glow: rgba(197, 155, 39, 0.25);
+  --accent-brass: #b38228;
+  
+  --shelf-wood-top: linear-gradient(180deg, #5a3118 0%, #3e1f0e 100%);
+  --shelf-wood-face: linear-gradient(180deg, #46220e 0%, #291206 100%);
+  --shelf-shadow: 0 16px 24px -6px rgba(0, 0, 0, 0.8), 0 6px 10px -4px rgba(0, 0, 0, 0.6);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #2f1d13 0%, #1a0f09 100%);
+  
+  --card-bg: #291b12;
+  --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --paper-bg: #f9f5ec;
+  --paper-text: #261810;
+}
+
+[data-theme="classic-wood"][data-mode="light"] {
+  --bg-primary: #f7f3ed;
+  --bg-secondary: #eee7db;
+  --bg-surface: #fffdfa;
+  --bg-surface-elevated: #ffffff;
+  --border-color: #d8cbb9;
+  --border-color-subtle: #e6dcce;
+  
+  --text-primary: #2d1c10;
+  --text-secondary: #57402f;
+  --text-muted: #8b7360;
+  
+  --accent-gold: #a67c1e;
+  --accent-gold-hover: #8f6713;
+  --accent-glow: rgba(166, 124, 30, 0.2);
+  --accent-brass: #946914;
+  
+  --shelf-wood-top: linear-gradient(180deg, #a66a38 0%, #854f24 100%);
+  --shelf-wood-face: linear-gradient(180deg, #78431c 0%, #542b0f 100%);
+  --shelf-shadow: 0 14px 20px -6px rgba(60, 30, 10, 0.35);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #fcf9f2 0%, #e8decb 100%);
+  
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 12px rgba(80, 50, 20, 0.08);
+  --paper-bg: #fffdf8;
+  --paper-text: #23160c;
+}
+
+/* ==========================================================================
+   2. DARK ACADEMIA THEME (Deep burgundy, forest green, aged gold)
+   ========================================================================== */
+[data-theme="dark-academia"][data-mode="dark"] {
+  --bg-primary: #121714;
+  --bg-secondary: #19221d;
+  --bg-surface: #1e2a24;
+  --bg-surface-elevated: #283730;
+  --border-color: #384d43;
+  --border-color-subtle: #293a32;
+  
+  --text-primary: #e6ede8;
+  --text-secondary: #bac9bf;
+  --text-muted: #7d9686;
+  
+  --accent-gold: #d4af37;
+  --accent-gold-hover: #e6c555;
+  --accent-glow: rgba(212, 175, 55, 0.3);
+  --accent-brass: #b89327;
+  
+  --shelf-wood-top: linear-gradient(180deg, #2d3b34 0%, #1c2621 100%);
+  --shelf-wood-face: linear-gradient(180deg, #1f2a24 0%, #121a16 100%);
+  --shelf-shadow: 0 16px 26px -6px rgba(0, 0, 0, 0.85);
+  --shelf-wall: radial-gradient(circle at 50% 25%, #24332b 0%, #0d120f 100%);
+  
+  --card-bg: #1c2621;
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --paper-bg: #f4eee1;
+  --paper-text: #17211b;
+}
+
+[data-theme="dark-academia"][data-mode="light"] {
+  --bg-primary: #f0f4f1;
+  --bg-secondary: #e2ebe4;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f7faf8;
+  --border-color: #c4d6cb;
+  --border-color-subtle: #d6e4dc;
+  
+  --text-primary: #16241c;
+  --text-secondary: #3b5244;
+  --text-muted: #6b8575;
+  
+  --accent-gold: #a88520;
+  --accent-gold-hover: #8f6f17;
+  --accent-glow: rgba(168, 133, 32, 0.2);
+  --accent-brass: #967417;
+  
+  --shelf-wood-top: linear-gradient(180deg, #566d61 0%, #3d5247 100%);
+  --shelf-wood-face: linear-gradient(180deg, #36493f 0%, #233129 100%);
+  --shelf-shadow: 0 14px 20px -6px rgba(20, 40, 30, 0.3);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #f6faf7 0%, #dce8e0 100%);
+  
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 12px rgba(25, 45, 35, 0.08);
+  --paper-bg: #fdfaf4;
+  --paper-text: #16241c;
+}
+
+/* ==========================================================================
+   3. MODERN MINIMAL THEME (White/slate grey, thin lines, clean aesthetic)
+   ========================================================================== */
+[data-theme="modern-minimal"][data-mode="dark"] {
+  --bg-primary: #121418;
+  --bg-secondary: #1a1e24;
+  --bg-surface: #222730;
+  --bg-surface-elevated: #2c333e;
+  --border-color: #384250;
+  --border-color-subtle: #29303a;
+  
+  --text-primary: #f1f3f7;
+  --text-secondary: #cbd3df;
+  --text-muted: #8c98a8;
+  
+  --accent-gold: #5b8bf7;
+  --accent-gold-hover: #7ba3f9;
+  --accent-glow: rgba(91, 139, 247, 0.25);
+  --accent-brass: #4a77db;
+  
+  --shelf-wood-top: linear-gradient(180deg, #323a46 0%, #262c35 100%);
+  --shelf-wood-face: linear-gradient(180deg, #262c35 0%, #191e24 100%);
+  --shelf-shadow: 0 12px 20px -6px rgba(0, 0, 0, 0.6);
+  --shelf-wall: #121418;
+  
+  --card-bg: #1f242c;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --paper-bg: #ffffff;
+  --paper-text: #121418;
+}
+
+[data-theme="modern-minimal"][data-mode="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #edf2f7;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --border-color: #e2e8f0;
+  --border-color-subtle: #edf2f7;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --accent-gold: #2563eb;
+  --accent-gold-hover: #1d4ed8;
+  --accent-glow: rgba(37, 99, 235, 0.2);
+  --accent-brass: #1e40af;
+  
+  --shelf-wood-top: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
+  --shelf-wood-face: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+  --shelf-shadow: 0 10px 18px -6px rgba(15, 23, 42, 0.12);
+  --shelf-wall: #f8fafc;
+  
+  --card-bg: #ffffff;
+  --card-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --paper-bg: #ffffff;
+  --paper-text: #0f172a;
+}
+
+/* ==========================================================================
+   4. MIDNIGHT READING THEME (Dark navy, warm lamp-glow accents)
+   ========================================================================== */
+[data-theme="midnight"][data-mode="dark"] {
+  --bg-primary: #0b111e;
+  --bg-secondary: #121b2d;
+  --bg-surface: #18243c;
+  --bg-surface-elevated: #20304f;
+  --border-color: #2b3e63;
+  --border-color-subtle: #1c2b46;
+  
+  --text-primary: #edf2fb;
+  --text-secondary: #c2d2ea;
+  --text-muted: #7e95bc;
+  
+  --accent-gold: #f6c860;
+  --accent-gold-hover: #ffd77a;
+  --accent-glow: rgba(246, 200, 96, 0.35);
+  --accent-brass: #e0b046;
+  
+  --shelf-wood-top: linear-gradient(180deg, #243555 0%, #17243c 100%);
+  --shelf-wood-face: linear-gradient(180deg, #17243c 0%, #0d1626 100%);
+  --shelf-shadow: 0 16px 26px -6px rgba(0, 0, 0, 0.9);
+  --shelf-wall: radial-gradient(circle at 50% 15%, #1a2a46 0%, #090e18 100%);
+  
+  --card-bg: #152136;
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --paper-bg: #f8f6f0;
+  --paper-text: #0d1626;
+}
+
+[data-theme="midnight"][data-mode="light"] {
+  --bg-primary: #f0f4fb;
+  --bg-secondary: #e2ebf7;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f8fafd;
+  --border-color: #c8d8ec;
+  --border-color-subtle: #dae5f4;
+  
+  --text-primary: #0f1c33;
+  --text-secondary: #2f4366;
+  --text-muted: #647b9f;
+  
+  --accent-gold: #d99a26;
+  --accent-gold-hover: #be821a;
+  --accent-glow: rgba(217, 154, 38, 0.2);
+  --accent-brass: #ab7213;
+  
+  --shelf-wood-top: linear-gradient(180deg, #60799f 0%, #465d82 100%);
+  --shelf-wood-face: linear-gradient(180deg, #42587a 0%, #2b3d57 100%);
+  --shelf-shadow: 0 12px 18px -6px rgba(15, 28, 51, 0.25);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #f7faff 0%, #dce6f5 100%);
+  
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 12px rgba(15, 28, 51, 0.08);
+  --paper-bg: #fffdfa;
+  --paper-text: #0f1c33;
+}
+
+/* ==========================================================================
+   5. SEPIA PAPER THEME (Vintage parchment, ink-like text)
+   ========================================================================== */
+[data-theme="sepia-paper"][data-mode="dark"] {
+  --bg-primary: #221b16;
+  --bg-secondary: #2c241e;
+  --bg-surface: #362c25;
+  --bg-surface-elevated: #44372e;
+  --border-color: #55453b;
+  --border-color-subtle: #3f332a;
+  
+  --text-primary: #ebe0d1;
+  --text-secondary: #cfbeab;
+  --text-muted: #9c8a77;
+  
+  --accent-gold: #c9933b;
+  --accent-gold-hover: #dfa84f;
+  --accent-glow: rgba(201, 147, 59, 0.3);
+  --accent-brass: #b37e2b;
+  
+  --shelf-wood-top: linear-gradient(180deg, #503d30 0%, #38291f 100%);
+  --shelf-wood-face: linear-gradient(180deg, #3b2b20 0%, #241912 100%);
+  --shelf-shadow: 0 16px 24px -6px rgba(0, 0, 0, 0.8);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #352920 0%, #1a130f 100%);
+  
+  --card-bg: #302620;
+  --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --paper-bg: #f2e9dc;
+  --paper-text: #221b16;
+}
+
+[data-theme="sepia-paper"][data-mode="light"] {
+  --bg-primary: #f6efe2;
+  --bg-secondary: #eae0cf;
+  --bg-surface: #fdf8ef;
+  --bg-surface-elevated: #ffffff;
+  --border-color: #d8c8b1;
+  --border-color-subtle: #e5d9c6;
+  
+  --text-primary: #2d2218;
+  --text-secondary: #564536;
+  --text-muted: #88725d;
+  
+  --accent-gold: #a67224;
+  --accent-gold-hover: #8f5f19;
+  --accent-glow: rgba(166, 114, 36, 0.2);
+  --accent-brass: #91611c;
+  
+  --shelf-wood-top: linear-gradient(180deg, #a38260 0%, #826344 100%);
+  --shelf-wood-face: linear-gradient(180deg, #785a3c 0%, #543c24 100%);
+  --shelf-shadow: 0 14px 20px -6px rgba(60, 40, 20, 0.3);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #faf5ec 0%, #e5dac9 100%);
+  
+  --card-bg: #fdfaf2;
+  --card-shadow: 0 4px 12px rgba(60, 40, 20, 0.08);
+  --paper-bg: #f9f3e7;
+  --paper-text: #281d13;
+}
+
+/* ==========================================================================
+   6. CRIMSON & PEARL THEME (Red and White Visual Identity)
+   ========================================================================== */
+[data-theme="crimson-pearl"][data-mode="dark"] {
+  --bg-primary: #150608;
+  --bg-secondary: #220a0d;
+  --bg-surface: #300e13;
+  --bg-surface-elevated: #42141a;
+  --border-color: #5c1b24;
+  --border-color-subtle: #3a1117;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #fecdd3;
+  --text-muted: #fda4af;
+  
+  --accent-gold: #e11d48;
+  --accent-gold-hover: #f43f5e;
+  --accent-glow: rgba(225, 29, 72, 0.35);
+  --accent-brass: #be123c;
+  
+  --shelf-wood-top: linear-gradient(180deg, #63121d 0%, #3d0a11 100%);
+  --shelf-wood-face: linear-gradient(180deg, #460c14 0%, #26050a 100%);
+  --shelf-shadow: 0 16px 26px -6px rgba(0, 0, 0, 0.85);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #3b0e14 0%, #150406 100%);
+  
+  --card-bg: #2d0e13;
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --paper-bg: #fff5f5;
+  --paper-text: #1f0408;
+}
+
+[data-theme="crimson-pearl"][data-mode="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #fff1f2;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffe4e6;
+  --border-color: #fecdd3;
+  --border-color-subtle: #ffe4e6;
+  
+  --text-primary: #1c0508;
+  --text-secondary: #881337;
+  --text-muted: #9f1239;
+  
+  --accent-gold: #be123c;
+  --accent-gold-hover: #9f1239;
+  --accent-glow: rgba(190, 18, 60, 0.2);
+  --accent-brass: #9f1239;
+  
+  --shelf-wood-top: linear-gradient(180deg, #e11d48 0%, #be123c 100%);
+  --shelf-wood-face: linear-gradient(180deg, #9f1239 0%, #881337 100%);
+  --shelf-shadow: 0 14px 20px -6px rgba(136, 19, 55, 0.2);
+  --shelf-wall: radial-gradient(circle at 50% 20%, #ffffff 0%, #fff1f2 100%);
+  
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 14px rgba(159, 18, 57, 0.08);
+  --paper-bg: #ffffff;
+  --paper-text: #1c0508;
+}
+
+/* ==========================================================================
+   SHELF STYLES (Wood / Minimal / Glass)
+   ========================================================================== */
+[data-shelf-style="minimal"] {
+  --shelf-wood-top: var(--border-color);
+  --shelf-wood-face: var(--border-color);
+  --shelf-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+[data-shelf-style="glass"] {
+  --shelf-wood-top: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(200, 220, 240, 0.2) 100%);
+  --shelf-wood-face: linear-gradient(180deg, rgba(200, 220, 240, 0.3) 0%, rgba(150, 180, 210, 0.4) 100%);
+  --shelf-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* ==========================================================================
+   FONT SIZE PREFERENCES
+   ========================================================================== */
+[data-font-size="small"] { font-size: 14px; }
+[data-font-size="medium"] { font-size: 16px; }
+[data-font-size="large"] { font-size: 18px; }
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

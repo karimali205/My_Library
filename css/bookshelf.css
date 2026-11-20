@@ -1,0 +1,411 @@
+/**
+ * bookshelf.css - Realistic Cozy Wooden Bookshelf & Dynamic Spines
+ * Supports realistic wooden depth, gold foil stamping, book lift animation,
+ * bookmark ribbons, RTL (fills right-to-left in Arabic) and LTR (left-to-right).
+ */
+
+.bookshelf-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  width: 100%;
+  padding: var(--space-md) 0 var(--space-xl) 0;
+  perspective: 1000px;
+}
+
+/* Individual Shelf Unit */
+.shelf-unit {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-lg);
+}
+
+.shelf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-md) var(--space-xs) var(--space-md);
+  margin-bottom: var(--space-2xs);
+}
+
+.shelf-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.shelf-book-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+/* Books Row Container */
+.shelf-books-row {
+  display: flex;
+  align-items: flex-end;
+  min-height: 230px;
+  padding: 0 var(--space-md);
+  position: relative;
+  z-index: 2;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  gap: 6px;
+  
+  /* Direction follows language */
+  flex-direction: row;
+}
+
+/* In RTL, items naturally pack from right to left */
+html[dir="rtl"] .shelf-books-row {
+  direction: rtl;
+}
+
+html[dir="ltr"] .shelf-books-row {
+  direction: ltr;
+}
+
+/* Shelf Base (The 3D Wood Plinth) */
+.shelf-wood-base {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  background: var(--shelf-wood-top);
+  box-shadow: var(--shelf-shadow);
+  border-radius: 2px;
+  z-index: 3;
+}
+
+.shelf-wood-base::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  height: 4px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+}
+
+.shelf-wood-base::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  height: 10px;
+  background: var(--shelf-wood-face);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+/* Brass Shelf Nameplate / Brackets */
+.shelf-brass-bracket {
+  position: absolute;
+  bottom: -16px;
+  width: 24px;
+  height: 20px;
+  background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-brass) 100%);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  z-index: 4;
+}
+
+.shelf-brass-bracket.left { inset-inline-start: 16px; }
+.shelf-brass-bracket.right { inset-inline-end: 16px; }
+
+/* ==========================================================================
+   BOOK SPINE COMPONENT
+   ========================================================================== */
+.book-spine {
+  --base-h: 210px;
+  --base-w: 48px;
+  
+  position: relative;
+  width: calc(var(--base-w) * var(--spine-width-scale, 1));
+  height: calc(var(--base-h) * var(--spine-height-scale, 1));
+  background-color: var(--spine-color, #4a2511);
+  background-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(255, 255, 255, 0.12) 20%,
+    rgba(0, 0, 0, 0.1) 40%,
+    rgba(0, 0, 0, 0.35) 90%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  border-radius: 4px 4px 1px 1px;
+  box-shadow: 
+    -3px 0 6px rgba(0, 0, 0, 0.4),
+    3px 0 6px rgba(0, 0, 0, 0.3),
+    0 -2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 4px;
+  transform-origin: bottom center;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  user-select: none;
+}
+
+/* Book Lifting Animation on hover / tap */
+.book-spine:hover,
+.book-spine:focus-visible {
+  transform: translateY(-16px) scale(1.02);
+  box-shadow: 
+    0 14px 24px rgba(0, 0, 0, 0.6),
+    0 0 16px var(--accent-glow);
+  outline: none;
+  z-index: 10;
+}
+
+.book-spine:active {
+  transform: translateY(-8px) scale(1.01);
+}
+
+/* Spine Embossed Ribs (Classic leather bookbinding) */
+.spine-rib {
+  position: absolute;
+  inset-inline-start: 2px;
+  inset-inline-end: 2px;
+  height: 3px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  border-radius: 1px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.top-rib { top: 22px; }
+.subtop-rib { top: 38px; }
+.subbottom-rib { bottom: 38px; }
+.bottom-rib { bottom: 22px; }
+
+/* Spine Content (Vertical text layout) */
+.spine-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 34px 2px;
+  overflow: hidden;
+  color: #eeddbb;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 1px #ffecb3;
+}
+
+.spine-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--font-title-ar);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 130px;
+  transform: rotate(180deg);
+}
+
+.spine-content.lang-en .spine-title {
+  font-family: var(--font-title-en);
+  letter-spacing: 1px;
+}
+
+.spine-author {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.68rem;
+  color: #d1b88e;
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 60px;
+  transform: rotate(180deg);
+  opacity: 0.9;
+}
+
+.spine-ornament {
+  font-size: 0.65rem;
+  color: var(--accent-gold);
+  opacity: 0.8;
+  margin: 2px 0;
+}
+
+/* Bookmark Ribbon hanging down */
+.spine-bookmark {
+  position: absolute;
+  bottom: -14px;
+  inset-inline-start: 12px;
+  width: 10px;
+  height: 20px;
+  background: linear-gradient(180deg, #b91c1c 0%, #991b1b 100%);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+  z-index: 5;
+}
+
+/* Favorite seal & loan indicator */
+.spine-fav-seal {
+  position: absolute;
+  top: 6px;
+  inset-inline-end: 6px;
+  font-size: 0.75rem;
+  color: #ffd700;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.spine-loan-tag {
+  position: absolute;
+  top: 6px;
+  inset-inline-start: 6px;
+  font-size: 0.75rem;
+  color: #60a5fa;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* ==========================================================================
+   DENSITY MODES (Compact, Comfortable, Spacious)
+   ========================================================================== */
+[data-density="compact"] .book-spine {
+  --base-h: 180px;
+  --base-w: 36px;
+  padding: 6px 2px;
+}
+[data-density="compact"] .spine-title {
+  font-size: 0.75rem;
+  max-height: 105px;
+}
+[data-density="compact"] .shelf-books-row {
+  min-height: 200px;
+  gap: 3px;
+}
+
+[data-density="spacious"] .book-spine {
+  --base-h: 240px;
+  --base-w: 58px;
+  padding: 12px 6px;
+}
+[data-density="spacious"] .spine-title {
+  font-size: 0.95rem;
+  max-height: 150px;
+}
+[data-density="spacious"] .shelf-books-row {
+  min-height: 260px;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   DYNAMIC STYLED VIRTUAL COVER (For Books without uploaded cover image)
+   ========================================================================== */
+.styled-virtual-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background-color: var(--cover-base-color, #4a2511);
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.12) 0%, transparent 70%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, transparent 8%, transparent 92%, rgba(0, 0, 0, 0.3) 100%);
+  border-radius: 6px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 
+    -4px 4px 14px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  user-select: none;
+}
+
+.cover-filigree-frame {
+  border: 1px solid rgba(220, 185, 110, 0.4);
+  outline: 1px solid rgba(220, 185, 110, 0.2);
+  outline-offset: -5px;
+  border-radius: 4px;
+  height: 100%;
+  width: 100%;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.cover-emblem {
+  font-size: 1.2rem;
+  color: var(--accent-gold);
+}
+
+.cover-center {
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cover-title {
+  color: #fff9ed;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  font-family: var(--font-title-ar);
+}
+
+.styled-virtual-cover.lang-en .cover-title {
+  font-family: var(--font-title-en);
+}
+
+.cover-subtitle {
+  color: #d8c8b1;
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.cover-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cover-divider {
+  width: 32px;
+  height: 1px;
+  background-color: var(--accent-gold);
+  margin-bottom: 2px;
+}
+
+.cover-author {
+  font-size: 0.75rem;
+  color: #f0e6d6;
+  font-weight: 600;
+}
+
+.cover-publisher {
+  font-size: 0.65rem;
+  color: #c4b5a0;
+}
+
+.cover-leather-sheen {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  width: 16px;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+  pointer-events: none;
+}
