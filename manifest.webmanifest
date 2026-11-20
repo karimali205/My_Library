@@ -1,0 +1,31 @@
+{
+  "name": "My Library - مكتبتي",
+  "short_name": "MyLibrary",
+  "description": "A cozy, warm personal library catalog for physical book lovers (English & Arabic)",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#231815",
+  "theme_color": "#4a2511",
+  "prefer_related_applications": false,
+  "categories": [
+    "books",
+    "lifestyle",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="classic-wood" data-mode="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <title>My Library - مكتبتي</title>
+  
+  <meta name="description" content="A warm, cozy personal physical library catalog with wooden bookshelves, barcode scanning, and bilingual Arabic/English support.">
+  <meta name="theme-color" content="#4a2511">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <!-- Google Fonts for Classic Library Aesthetic (Amiri, Cairo, Playfair Display, Lora, Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Application Stylesheets (Relative paths for GitHub Pages subpath compatibility) -->
+  <link rel="stylesheet" href="./css/themes.css">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/bookshelf.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- Desktop Sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <img src="./icons/icon.svg" alt="My Library Logo" class="app-brand-logo">
+        <div class="app-brand-titles">
+          <h1 class="app-brand-title">مكتبتي</h1>
+          <span class="app-brand-subtitle">ملاذك الدافئ للكتب</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-link active" data-route="home">
+          <span class="nav-link-icon">🏛️</span>
+          <span class="nav-link-text">الرئيسية</span>
+        </button>
+
+        <button class="nav-link" data-route="library">
+          <span class="nav-link-icon">📚</span>
+          <span class="nav-link-text">المكتبة</span>
+        </button>
+
+        <button class="nav-link" data-route="smart-add">
+          <span class="nav-link-icon">⚡</span>
+          <span class="nav-link-text">إضافة ذكية</span>
+        </button>
+
+        <button class="nav-link" data-route="loans">
+          <span class="nav-link-icon">🤝</span>
+          <span class="nav-link-text">الإعارات</span>
+        </button>
+
+        <button class="nav-link" data-route="authors">
+          <span class="nav-link-icon">✍️</span>
+          <span class="nav-link-text">المؤلفون</span>
+        </button>
+
+        <button class="nav-link" data-route="series">
+          <span class="nav-link-icon">📖</span>
+          <span class="nav-link-text">السلاسل</span>
+        </button>
+
+        <button class="nav-link" data-route="collections">
+          <span class="nav-link-icon">📁</span>
+          <span class="nav-link-text">المجموعات</span>
+        </button>
+
+        <button class="nav-link" data-route="wishlist">
+          <span class="nav-link-icon">✨</span>
+          <span class="nav-link-text">قائمة الرغبات</span>
+        </button>
+
+        <button class="nav-link" data-route="map">
+          <span class="nav-link-icon">🗺️</span>
+          <span class="nav-link-text">خريطة الرفوف</span>
+        </button>
+
+        <button class="nav-link" data-route="stats">
+          <span class="nav-link-icon">📊</span>
+          <span class="nav-link-text">الإحصائيات</span>
+        </button>
+
+        <button class="nav-link" data-route="inventory">
+          <span class="nav-link-icon">📋</span>
+          <span class="nav-link-text">الجرد والتدقيق</span>
+        </button>
+
+        <button class="nav-link" data-route="settings">
+          <span class="nav-link-icon">⚙️</span>
+          <span class="nav-link-text">الإعدادات</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Viewport -->
+    <div id="main-viewport">
+      <!-- Top Sticky App Bar Header -->
+      <header id="top-header">
+        <div class="header-left">
+          <div class="mobile-brand">
+            <img src="./icons/icon.svg" alt="My Library" style="width: 32px; height: 32px;">
+            <h2 class="mobile-brand-title">مكتبتي</h2>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Instant Language Toggle Button -->
+          <button class="btn btn-sm btn-icon" id="btn-header-lang" title="Toggle Language">
+            English
+          </button>
+
+          <!-- Quick Theme Mode Toggle -->
+          <button class="btn btn-sm btn-icon" id="btn-header-theme" title="Toggle Daylight / Candlelight Mode">
+            🌓
+          </button>
+
+          <!-- Quick Add Book -->
+          <button class="btn btn-sm btn-primary" id="btn-header-new-book">
+            + <span class="d-none-sm">كتاب</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- View Content Mount Point -->
+      <main id="view-mount"></main>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (Visible only on <768px screens) -->
+    <nav id="bottom-nav">
+      <button class="bottom-nav-item active" data-route="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span class="bottom-nav-label">الرئيسية</span>
+      </button>
+
+      <button class="bottom-nav-item" data-route="library">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        <span class="bottom-nav-label">المكتبة</span>
+      </button>
+
+      <button class="bottom-nav-item" data-route="smart-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span class="bottom-nav-label">إضافة</span>
+      </button>
+
+      <button class="bottom-nav-item" data-route="loans">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span class="bottom-nav-label">الإعارات</span>
+      </button>
+
+      <button class="bottom-nav-item" data-route="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span class="bottom-nav-label">الإعدادات</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div id="toast-container"></div>
+
+  <!-- Main ES Module Script -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
