@@ -7,6 +7,7 @@
 
 import { getAllBooks, saveBooksBatch, deleteBook } from '../db.js';
 import { t, isRTL, normalizeSearch, formatNumber } from '../i18n.js';
+import { getCategoryLabel } from '../models.js';
 import { createSpineElement, createStyledCoverHTML } from '../utils/spine-generator.js';
 
 let currentViewMode = localStorage.getItem('mylibrary_view_mode') || 'bookshelf'; // 'bookshelf' | 'grid' | 'table'
@@ -35,6 +36,9 @@ export async function renderLibraryView(container, navigateTo, initialParams = {
   }
   if (initialParams.shelfFilter) {
     activeFilters.shelf = initialParams.shelfFilter;
+  }
+  if (initialParams.categoryFilter) {
+    activeFilters.category = initialParams.categoryFilter;
   }
 
   const allBooks = await getAllBooks();
@@ -134,7 +138,7 @@ export async function renderLibraryView(container, navigateTo, initialParams = {
             <select id="lib-cat-select" class="form-control btn-sm" style="width: auto;">
               <option value="all">${t('filterCategory')}: ${t('all')}</option>
               ${getUniqueCategories(allBooks).map(c => `
-                <option value="${escapeHtml(c)}" ${activeFilters.category === c ? 'selected' : ''}>${escapeHtml(c)}</option>
+                <option value="${escapeHtml(c)}" ${activeFilters.category === c ? 'selected' : ''}>${escapeHtml(getCategoryLabel(c, isRTL() ? 'ar' : 'en'))}</option>
               `).join('')}
             </select>
 
@@ -278,7 +282,7 @@ export async function renderLibraryView(container, navigateTo, initialParams = {
                   ${b.subtitle ? `<br><small style="color:var(--text-muted);">${escapeHtml(b.subtitle)}</small>` : ''}
                 </td>
                 <td>${escapeHtml((b.authors || []).join(', '))}</td>
-                <td><span class="badge">${escapeHtml(b.category || '')}</span></td>
+                <td><span class="badge">${escapeHtml(getCategoryLabel(b.category || '', isRTL() ? 'ar' : 'en'))}</span></td>
                 <td><small>${escapeHtml([b.location?.room, b.location?.cabinet, b.location?.shelf].filter(Boolean).join(' • '))}</small></td>
                 <td><span class="badge badge-${b.status || 'unread'}">${t('status' + capitalize(b.status || 'unread'))}</span></td>
                 <td>${b.rating ? '★ ' + b.rating : '-'}</td>
@@ -595,10 +599,14 @@ function groupBooksIntoShelves(books) {
 
     const shelves = [];
     catMap.forEach((catBooks, catName) => {
+      const localizedCat = getCategoryLabel(catName, isRTL() ? 'ar' : 'en');
       // Chunk large categories
       for (let i = 0; i < catBooks.length; i += SHELF_SIZE) {
         const chunk = catBooks.slice(i, i + SHELF_SIZE);
-        const chunkLabel = catBooks.length > SHELF_SIZE ? `${catName} (${Math.floor(i / SHELF_SIZE) + 1})` : catName;
+        const shelfNum = Math.floor(i / SHELF_SIZE) + 1;
+        const chunkLabel = catBooks.length > SHELF_SIZE 
+          ? `${localizedCat} (${formatNumber(shelfNum)})` 
+          : localizedCat;
         shelves.push({ name: chunkLabel, books: chunk });
       }
     });
@@ -609,7 +617,8 @@ function groupBooksIntoShelves(books) {
   const shelves = [];
   for (let i = 0; i < books.length; i += SHELF_SIZE) {
     const chunk = books.slice(i, i + SHELF_SIZE);
-    shelves.push({ name: `${t('shelf')} ${Math.floor(i / SHELF_SIZE) + 1}`, books: chunk });
+    const shelfNum = Math.floor(i / SHELF_SIZE) + 1;
+    shelves.push({ name: `${t('shelf')} ${formatNumber(shelfNum)}`, books: chunk });
   }
   return shelves;
 }

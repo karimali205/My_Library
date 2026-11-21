@@ -20,11 +20,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 
   <!-- Application Stylesheets (Relative paths for GitHub Pages subpath compatibility) -->
-  <link rel="stylesheet" href="./css/themes.css">
-  <link rel="stylesheet" href="./css/main.css">
-  <link rel="stylesheet" href="./css/bookshelf.css">
-  <link rel="stylesheet" href="./css/components.css">
-  <link rel="stylesheet" href="./css/responsive.css">
+  <link rel="stylesheet" href="./css/themes.css?v=2.0">
+  <link rel="stylesheet" href="./css/main.css?v=2.0">
+  <link rel="stylesheet" href="./css/bookshelf.css?v=2.0">
+  <link rel="stylesheet" href="./css/components.css?v=2.0">
+  <link rel="stylesheet" href="./css/responsive.css?v=2.0">
 </head>
 <body>
 
@@ -37,6 +37,7 @@
           <h1 class="app-brand-title">مكتبتي</h1>
           <span class="app-brand-subtitle">ملاذك الدافئ للكتب</span>
         </div>
+        <button class="btn btn-sm btn-icon mobile-sidebar-close-btn" id="btn-sidebar-close" aria-label="Close menu">✕</button>
       </div>
 
       <nav class="sidebar-nav">
@@ -107,6 +108,13 @@
       <!-- Top Sticky App Bar Header -->
       <header id="top-header">
         <div class="header-left">
+          <button class="btn btn-sm btn-icon mobile-menu-toggle-btn" id="btn-mobile-menu" aria-label="Toggle menu" title="القائمة">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
           <div class="mobile-brand">
             <img src="./icons/icon.svg" alt="My Library" style="width: 32px; height: 32px;">
             <h2 class="mobile-brand-title">مكتبتي</h2>
@@ -180,10 +188,21 @@
     </nav>
   </div>
 
+  <!-- Mobile Sidebar Backdrop Overlay -->
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
   <!-- Toast Notifications Container -->
   <div id="toast-container"></div>
 
-  <!-- Main ES Module Script -->
-  <script type="module" src="./js/app.js"></script>
+  <!-- Main ES Module Script with Cache Busting -->
+  <script type="module" src="./js/app.js?v=2.0"></script>
+  <script>
+    // Ensure automatic activation of new versions
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
+  </script>
 </body>
 </html>

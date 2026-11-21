@@ -5,12 +5,41 @@
 
 import { getCategoryColor } from '../models.js';
 
+// Rich, authentic library leather bindings palette
+const LEATHER_PALETTE = [
+  '#5c241c', // Crimson Burgundy
+  '#1b3d2f', // Forest Emerald
+  '#1c2d4a', // Midnight Navy
+  '#4a2c11', // Classic Saddle Mahogany
+  '#632f1b', // Warm Russet / Terracotta
+  '#2a201c', // Dark Roast Espresso
+  '#3d2314', // Antique Chestnut
+  '#253529', // Deep Olive Green
+  '#3d2138', // Imperial Plum
+  '#523624', // Warm Cocoa Leather
+  '#243342', // Slate Leather
+  '#68411b', // Cognac Leather
+  '#22393d', // Deep Teal
+  '#501c27'  // Deep Maroon
+];
+
+export function getBookLeatherColor(book) {
+  if (book.coverColor) return book.coverColor;
+  let hash = 0;
+  const str = (book.id || '') + (book.title || '') + (book.category || '');
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return LEATHER_PALETTE[Math.abs(hash) % LEATHER_PALETTE.length];
+}
+
 /**
  * Generate a book spine element for the wooden bookshelf
  */
 export function createSpineElement(book, options = {}) {
   const isArabic = book.language === 'ar' || /[\u0600-\u06FF]/.test(book.title);
-  const baseColor = getCategoryColor(book.category);
+  const baseColor = getBookLeatherColor(book);
   const statusRibbon = getStatusRibbonClass(book.status);
 
   // Derive subtle gradient variations
@@ -18,22 +47,34 @@ export function createSpineElement(book, options = {}) {
   spineEl.className = `book-spine ${statusRibbon}`;
   spineEl.setAttribute('role', 'button');
   spineEl.setAttribute('tabindex', '0');
-  spineEl.setAttribute('aria-label', `${book.title} - ${book.authors.join(', ')}`);
+  spineEl.setAttribute('aria-label', `${book.title} - ${(book.authors || []).join(', ')}`);
   spineEl.dataset.bookId = book.id;
 
-  // Book thickness / height variation based on page count or random seed
-  const pages = book.pageCount || 300;
-  const heightScale = Math.min(1.08, Math.max(0.85, 0.88 + (pages % 50) * 0.004));
-  const widthFactor = Math.min(1.4, Math.max(0.75, 0.65 + (pages / 650)));
+  // Uniform, balanced spine dimensions for consistent, elegant shelf alignment
+  const heightScale = 1.0;
+  const widthFactor = 1.0;
 
   spineEl.style.setProperty('--spine-color', baseColor);
-  spineEl.style.setProperty('--spine-height-scale', heightScale.toFixed(2));
-  spineEl.style.setProperty('--spine-width-scale', widthFactor.toFixed(2));
+  spineEl.style.setProperty('--spine-height-scale', heightScale);
+  spineEl.style.setProperty('--spine-width-scale', widthFactor);
 
-  // Determine title text
-  const displayTitle = book.title.length > 40 ? book.title.slice(0, 38) + '…' : book.title;
+  // Determine dynamic font scaling based on title length
+  const titleLen = (book.title || '').length;
+  let titleFontSize = '0.94rem';
+  if (titleLen > 36) {
+    titleFontSize = '0.74rem';
+  } else if (titleLen > 24) {
+    titleFontSize = '0.80rem';
+  } else if (titleLen > 16) {
+    titleFontSize = '0.86rem';
+  }
+  spineEl.style.setProperty('--title-font-size', titleFontSize);
+
+  // Full title without truncation
+  const displayTitle = book.title || 'بدون عنوان';
   const authorText = (book.authors && book.authors.length > 0) ? book.authors[0] : '';
-  const displayAuthor = authorText.length > 25 ? authorText.slice(0, 23) + '…' : authorText;
+  // Only display author on the vertical spine if title is concise (under 22 chars)
+  const showAuthorOnSpine = Boolean(authorText && titleLen <= 22);
 
   spineEl.innerHTML = `
     <div class="spine-texture"></div>
@@ -42,9 +83,15 @@ export function createSpineElement(book, options = {}) {
     
     <div class="spine-content ${isArabic ? 'lang-ar' : 'lang-en'}">
       <div class="spine-ornament top-ornament">✦</div>
-      <div class="spine-title">${escapeHtml(displayTitle)}</div>
-      ${displayAuthor ? `<div class="spine-author">${escapeHtml(displayAuthor)}</div>` : ''}
+      <div class="spine-title" title="${escapeHtml(book.title)}">${escapeHtml(displayTitle)}</div>
+      ${showAuthorOnSpine ? `<div class="spine-author" title="${escapeHtml(authorText)}">${escapeHtml(authorText)}</div>` : ''}
       <div class="spine-ornament bottom-ornament">✦</div>
+    </div>
+
+    <div class="spine-tooltip">
+      <div class="spine-tip-title">${escapeHtml(book.title)}</div>
+      ${authorText ? `<div class="spine-tip-author">${escapeHtml(authorText)}</div>` : ''}
+      ${book.category ? `<div class="spine-tip-cat">${escapeHtml(book.category)}</div>` : ''}
     </div>
 
     <div class="spine-rib subbottom-rib"></div>

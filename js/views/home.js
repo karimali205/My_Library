@@ -6,6 +6,7 @@
 
 import { getAllBooks, getSetting } from '../db.js';
 import { t, isRTL, formatDate, formatNumber } from '../i18n.js';
+import { getCategoryLabel } from '../models.js';
 import { createStyledCoverHTML } from '../utils/spine-generator.js';
 
 export async function renderHomeView(container, navigateTo) {
@@ -151,26 +152,33 @@ export async function renderHomeView(container, navigateTo) {
         </div>
       ` : ''}
 
-      <!-- Random Unread Suggestion -->
+      <!-- Random Unread Suggestion (اقتراح اليوم) -->
       ${randomBook ? `
         <div class="suggestion-banner">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--accent-gold); font-weight: bold; letter-spacing: 1px;">
+          <div class="suggestion-layout">
+            <div class="suggestion-cover-frame">
+              ${randomBook.coverImage ? `
+                <img src="${randomBook.coverImage}" alt="${escapeHtml(randomBook.title)}" class="suggestion-cover-img">
+              ` : createStyledCoverHTML(randomBook, 'suggestion')}
+            </div>
+            <div class="suggestion-info">
+              <span class="suggestion-badge">
                 ✨ ${t('randomSuggestion')}
               </span>
-              <h3 style="font-size: 1.3rem; margin: 4px 0 2px 0;">${randomBook.title}</h3>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
-                ${(randomBook.authors || []).join(', ')} • ${randomBook.category || ''}
-              </p>
-              ${randomBook.review ? `<p style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: var(--space-sm);">"${randomBook.review}"</p>` : ''}
-              <div style="display: flex; gap: var(--space-sm); align-items: center;">
-                <button class="btn btn-sm btn-primary" id="btn-open-random" data-book-id="${randomBook.id}">${t('openBook')}</button>
-                <button class="btn btn-sm btn-secondary" id="btn-reroll-random">🎲 ${t('suggestAnother')}</button>
+              <h3 class="suggestion-title">${escapeHtml(randomBook.title)}</h3>
+              <div class="suggestion-meta">
+                <span class="suggestion-author">✍️ ${(randomBook.authors || []).map(escapeHtml).join(', ')}</span>
+                <span class="suggestion-cat-pill">${escapeHtml(getCategoryLabel(randomBook.category, isRTL() ? 'ar' : 'en'))}</span>
               </div>
-            </div>
-            <div style="width: 80px; height: 120px; flex-shrink: 0; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
-              ${randomBook.coverImage ? `<img src="${randomBook.coverImage}" alt="${randomBook.title}" style="width:100%;height:100%;object-fit:cover;">` : createStyledCoverHTML(randomBook, 'small')}
+              ${randomBook.review ? `<p class="suggestion-quote">"${escapeHtml(randomBook.review)}"</p>` : ''}
+              <div class="suggestion-actions">
+                <button class="btn btn-sm btn-primary" id="btn-open-random" data-book-id="${randomBook.id}">
+                  📖 ${t('openBook')}
+                </button>
+                <button class="btn btn-sm btn-secondary" id="btn-reroll-random">
+                  🎲 ${t('suggestAnother')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -179,17 +187,21 @@ export async function renderHomeView(container, navigateTo) {
       <!-- Recently Added Books Carousel -->
       <div style="margin-bottom: var(--space-xl);">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm);">
-          <h3 style="font-size: 1.15rem; color: var(--accent-gold);">${t('recentlyAdded')}</h3>
-          <button class="btn btn-sm btn-secondary" id="btn-view-all-library">${t('view')} ${t('all')}</button>
+          <h3 style="font-size: 1.15rem; color: var(--accent-gold); margin: 0;">📚 ${t('recentlyAdded')}</h3>
+          <button class="btn btn-sm btn-secondary" id="btn-view-all-library">${t('view')} ${t('all')} ➔</button>
         </div>
-        <div class="horizontal-scroll-shelf">
+        <div class="horizontal-scroll-shelf recent-shelf-row">
           ${recentlyAdded.map(b => `
-            <div class="continue-reading-card" data-book-id="${b.id}" style="flex: 0 0 200px; flex-direction: column;">
-              <div style="width: 100%; aspect-ratio: 2/3; border-radius: 4px; overflow: hidden; margin-bottom: var(--space-xs);">
-                ${b.coverImage ? `<img src="${b.coverImage}" alt="${b.title}" style="width:100%;height:100%;object-fit:cover;">` : createStyledCoverHTML(b, 'small')}
+            <div class="recent-book-card" data-book-id="${b.id}">
+              <div class="recent-card-cover-wrap">
+                ${b.coverImage ? `
+                  <img src="${b.coverImage}" alt="${escapeHtml(b.title)}" class="recent-card-img" loading="lazy">
+                ` : createStyledCoverHTML(b, 'recent')}
               </div>
-              <h4 style="font-size: 0.85rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.title}</h4>
-              <p style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${(b.authors || []).join(', ')}</p>
+              <div class="recent-card-body">
+                <h4 class="recent-card-title" title="${escapeHtml(b.title)}">${escapeHtml(b.title)}</h4>
+                <p class="recent-card-author" title="${escapeHtml((b.authors || []).join(', '))}">${escapeHtml((b.authors || []).join(', '))}</p>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -239,4 +251,14 @@ export async function renderHomeView(container, navigateTo) {
       navigateTo('library', { statusFilter: filter });
     });
   });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

@@ -77,3 +77,9 @@ export async function compressImageUrl(url, maxWidth = 400, quality = 0.82) {
     img.src = url;
   });
 }
+
+export async function compressImage(file, options = {}) {
+  const maxWidth = options.maxWidth || 400;
+  const quality = options.quality || 0.82;
+  return compressImageFile(file, maxWidth, quality);
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'my-library-cache-v1.1.0';
+const CACHE_NAME = 'my-library-cache-v2.0.0';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
   './css/responsive.css',
   './js/app.js',
   './js/db.js',
+  './js/data/library-books.js',
   './js/i18n.js',
   './js/themes.js',
   './js/models.js',
@@ -31,6 +32,7 @@ const ASSETS_TO_CACHE = [
   './js/views/settings.js',
   './js/utils/spine-generator.js',
   './js/utils/image-compressor.js',
+  './js/utils/cover-fetcher.js',
   './js/utils/barcode.js',
   './js/utils/qrcode.js',
   './js/utils/csv-excel.js',
@@ -78,21 +80,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-while-revalidate for local assets
+  // Network-first for all local assets so code updates appear immediately
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      }).catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+    fetch(event.request).then((networkResponse) => {
+      if (networkResponse && networkResponse.status === 200) {
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+      }
+      return networkResponse;
+    }).catch(() => caches.match(event.request))
   );
 });
 

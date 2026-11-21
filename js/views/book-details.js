@@ -8,6 +8,7 @@ import { getBookById, getAllBooks, saveBook, deleteBook } from '../db.js';
 import { t, isRTL, formatDate, formatNumber } from '../i18n.js';
 import { createStyledCoverHTML } from '../utils/spine-generator.js';
 import { printBookLabels } from '../utils/print.js';
+import { searchBookCover } from '../utils/cover-fetcher.js';
 
 export async function renderBookDetailsView(container, navigateTo, params = {}) {
   const bookId = params.bookId;
@@ -69,7 +70,11 @@ export async function renderBookDetailsView(container, navigateTo, params = {}) 
             <img src="${book.coverImage}" alt="${escapeHtml(book.title)}">
           ` : createStyledCoverHTML(book, 'large')}
 
-          <div style="width: 100%; display: flex; flex-direction: column; gap: var(--space-xs);">
+          <button class="btn btn-secondary btn-sm" id="btn-fetch-cover-online" style="width: 100%; margin-top: 4px;">
+            🌐 ${book.coverImage ? 'تحديث الغلاف أونلاين' : 'جلب الغلاف أونلاين'}
+          </button>
+
+          <div style="width: 100%; display: flex; flex-direction: column; gap: var(--space-xs); margin-top: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
               <span>${t('status')}:</span>
               <span class="badge badge-${book.status || 'unread'}">${t('status' + capitalize(book.status || 'unread'))}</span>
@@ -216,6 +221,32 @@ export async function renderBookDetailsView(container, navigateTo, params = {}) 
   // Attach Event Handlers
   container.querySelector('#btn-back').addEventListener('click', () => navigateTo('library'));
   container.querySelector('#btn-edit-book').addEventListener('click', () => navigateTo('book-form', { bookId: book.id }));
+
+  const btnFetchCover = container.querySelector('#btn-fetch-cover-online');
+  if (btnFetchCover) {
+    btnFetchCover.addEventListener('click', async () => {
+      btnFetchCover.disabled = true;
+      btnFetchCover.textContent = '⏳ جاري البحث عن الغلاف...';
+      try {
+        const author = (book.authors && book.authors.length > 0) ? book.authors[0] : '';
+        const res = await searchBookCover(book.title, author, book.isbn);
+        if (res && res.dataUrl) {
+          book.coverImage = res.dataUrl;
+          await saveBook(book);
+          alert('✅ تم جلب غلاف الكتاب وحفظه بنجاح على جهازك!');
+          renderBookDetailsView(container, navigateTo, { bookId: book.id });
+        } else {
+          alert('لم يتم العثور على غلاف أونلاين مطابق. يمكنك رفع صورة غلاف يدوياً من زر تعديل الكتاب.');
+          btnFetchCover.disabled = false;
+          btnFetchCover.textContent = '🌐 جلب الغلاف أونلاين';
+        }
+      } catch (err) {
+        alert('حدث خطأ أثناء جلب الغلاف: ' + (err.message || err));
+        btnFetchCover.disabled = false;
+        btnFetchCover.textContent = '🌐 جلب الغلاف أونلاين';
+      }
+    });
+  }
 
   container.querySelector('#btn-print-label').addEventListener('click', () => {
     printBookLabels([book], 'medium');

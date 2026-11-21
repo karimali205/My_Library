@@ -9,6 +9,7 @@ import { getBookById, getAllBooks, saveBook } from '../db.js';
 import { createEmptyBook, sanitizeBook, DEFAULT_CATEGORIES } from '../models.js';
 import { t, isRTL, normalizeArabic } from '../i18n.js';
 import { compressImageFile } from '../utils/image-compressor.js';
+import { searchBookCover } from '../utils/cover-fetcher.js';
 
 let isQuickMode = false;
 
@@ -151,11 +152,14 @@ export async function renderBookFormView(container, navigateTo, params = {}) {
                     ${book.coverImage ? `<img src="${book.coverImage}" style="width:100%;height:100%;object-fit:cover;">` : '<span style="font-size:1.5rem;">📷</span>'}
                   </div>
                   <div style="display: flex; flex-direction: column; gap: var(--space-xs); flex: 1;">
-                    <div style="display: flex; gap: var(--space-xs);">
+                    <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap;">
                       <label class="btn btn-sm btn-secondary" style="cursor: pointer;">
                         📁 ${t('uploadImage')}
                         <input type="file" id="file-cover-input" accept="image/*" style="display: none;">
                       </label>
+                      <button type="button" class="btn btn-sm btn-secondary" id="btn-fetch-cover-online">
+                        🌐 بحث عن الغلاف أونلاين
+                      </button>
                       ${book.coverImage ? `<button class="btn btn-sm btn-icon" id="btn-remove-cover" style="color:#ef4444;" title="${t('removeCover')}">✕</button>` : ''}
                     </div>
                     <input type="url" id="field-cover-url" class="form-control btn-sm" placeholder="Or paste image URL..." value="${book.coverImage && book.coverImage.startsWith('http') ? escapeHtml(book.coverImage) : ''}">
@@ -392,6 +396,42 @@ export async function renderBookFormView(container, navigateTo, params = {}) {
       btnRemoveCover.addEventListener('click', () => {
         book.coverImage = '';
         render();
+      });
+    }
+
+    // Fetch Cover Online button
+    const btnFetchCoverOnline = container.querySelector('#btn-fetch-cover-online');
+    if (btnFetchCoverOnline) {
+      btnFetchCoverOnline.addEventListener('click', async () => {
+        const titleVal = container.querySelector('#field-title').value.trim();
+        const authorsVal = container.querySelector('#field-authors').value.trim();
+        const isbnVal = container.querySelector('#field-isbn') ? container.querySelector('#field-isbn').value.trim() : '';
+
+        if (!titleVal) {
+          alert('يرجى كتابة عنوان الكتاب أولاً للبحث عن غلافه.');
+          return;
+        }
+
+        btnFetchCoverOnline.disabled = true;
+        btnFetchCoverOnline.textContent = '⏳ جاري البحث...';
+        try {
+          const res = await searchBookCover(titleVal, authorsVal, isbnVal);
+          if (res && res.dataUrl) {
+            book.coverImage = res.dataUrl;
+            const previewBox = container.querySelector('#cover-preview-box');
+            if (previewBox) {
+              previewBox.innerHTML = `<img src="${res.dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+            }
+            alert('✅ تم العثور على الغلاف وجلبه بنجاح!');
+          } else {
+            alert('لم يتم العثور على غلاف مطابق أونلاين. يمكنك رفع صورة الغلاف يدوياً.');
+          }
+        } catch (err) {
+          alert('خطأ: ' + (err.message || err));
+        } finally {
+          btnFetchCoverOnline.disabled = false;
+          btnFetchCoverOnline.textContent = '🌐 بحث عن الغلاف أونلاين';
+        }
       });
     }
 

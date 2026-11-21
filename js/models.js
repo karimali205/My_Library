@@ -46,7 +46,7 @@ export function createEmptyBook() {
 
     // Acquisition & Value
     purchasePrice: null,
-    currency: 'USD',
+    currency: 'EGP',
     purchaseDate: '',
     purchasePlace: '',
     isGift: false,
@@ -133,34 +133,40 @@ export function sanitizeBook(raw) {
 }
 
 export const DEFAULT_CATEGORIES = [
-  { id: 'literature', en: 'Literature & Fiction', ar: 'الأدب والرواية' },
-  { id: 'history', en: 'History & Civilization', ar: 'التاريخ والحضارة' },
-  { id: 'philosophy', en: 'Philosophy & Thought', ar: 'الفلسفة والفكر' },
-  { id: 'religion', en: 'Religion & Theology', ar: 'العلوم الدينية والشرعية' },
-  { id: 'science', en: 'Science & Nature', ar: 'العلوم والطبيعة' },
-  { id: 'psychology', en: 'Psychology & Self-Help', ar: 'علم النفس وتطوير الذات' },
-  { id: 'arts', en: 'Arts & Architecture', ar: 'الفنون والعمارة' },
-  { id: 'politics', en: 'Politics & Economics', ar: 'السياسة والاقتصاد' },
-  { id: 'biography', en: 'Biography & Memoirs', ar: 'السير والتراجم' },
-  { id: 'poetry', en: 'Poetry', ar: 'الشعر والقصائد' },
-  { id: 'technology', en: 'Technology & Computing', ar: 'التكنولوجيا والحاسوب' },
-  { id: 'general', en: 'General Reference', ar: 'المعارف العامة والموسوعات' }
+  { id: 'arabic_literature', en: 'Arabic Literature & Novels', ar: 'الروايات والأدب العربي' },
+  { id: 'translated_literature', en: 'Translated World Literature', ar: 'الأدب العالمي المترجم' },
+  { id: 'psychology_development', en: 'Psychology & Self-Development', ar: 'علم النفس وتطوير الذات' },
+  { id: 'islamic_studies', en: 'Islamic & Religious Studies', ar: 'الدراسات والعلوم الإسلامية' },
+  { id: 'thought_philosophy', en: 'Thought & Philosophy', ar: 'الفكر والفلسفة' },
+  { id: 'history_civilization', en: 'History & Civilization', ar: 'التاريخ والحضارة' },
+  { id: 'science_knowledge', en: 'Science & General Knowledge', ar: 'العلوم والمعرفة العامة' },
+  { id: 'politics_society', en: 'Politics & Society', ar: 'السياسة والمجتمع' }
 ];
 
 export const CATEGORY_COLORS = {
+  'arabic_literature': '#8b263e',
+  'translated_literature': '#5c2a68',
+  'psychology_development': '#7f4f24',
+  'islamic_studies': '#1b4332',
+  'thought_philosophy': '#2b4162',
+  'history_civilization': '#8a4b2d',
+  'science_knowledge': '#1e5f74',
+  'politics_society': '#3a506b',
   'literature': '#8b263e',
-  'history': '#9c5932',
-  'philosophy': '#3d5a80',
+  'history': '#8a4b2d',
+  'philosophy': '#2b4162',
   'religion': '#1b4332',
-  'science': '#2b7a78',
-  'psychology': '#6d597a',
-  'arts': '#b56576',
-  'politics': '#7f4f24',
-  'biography': '#4f772d',
-  'poetry': '#582f0e',
-  'technology': '#1d3557',
+  'science': '#1e5f74',
+  'psychology': '#7f4f24',
   'general': '#495057'
 };
+
+export function getCategoryLabel(catId, lang = 'ar') {
+  if (!catId) return '';
+  const found = DEFAULT_CATEGORIES.find(c => c.id === catId || c.ar === catId || c.en.toLowerCase() === catId.toLowerCase());
+  if (found) return lang === 'ar' ? found.ar : found.en;
+  return catId;
+}
 
 export function getCategoryColor(categoryName) {
   if (!categoryName) return '#5c2c16';

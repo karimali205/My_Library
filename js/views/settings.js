@@ -24,6 +24,7 @@ import { getThemeState, updateThemeState, THEMES } from '../themes.js';
 import { exportBooksToCSV, parseCSV, mapRowsToBooks, downloadFile } from '../utils/csv-excel.js';
 import { pushToGitHub, pullFromGitHub } from '../utils/github-sync.js';
 import { printCatalog } from '../utils/print.js';
+import { searchBookCover } from '../utils/cover-fetcher.js';
 
 export async function renderSettingsView(container, navigateTo, params = {}) {
   const books = await getAllBooks(true);
@@ -35,7 +36,7 @@ export async function renderSettingsView(container, navigateTo, params = {}) {
 
   // Settings values
   const yearlyGoal = await getSetting('yearlyReadingGoal', 24);
-  const defaultCurrency = await getSetting('defaultCurrency', 'USD');
+  const defaultCurrency = await getSetting('defaultCurrency', 'EGP');
   const ghToken = await getSetting('githubToken', '');
   const ghRepo = await getSetting('githubRepo', '');
   const lastSyncTime = await getSetting('githubLastSync', null);
@@ -302,6 +303,35 @@ export async function renderSettingsView(container, navigateTo, params = {}) {
                     `).join('')}
                   </div>
                 `}
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch Book Cover Fetcher -->
+          <div class="form-section-accordion">
+            <div class="accordion-header"><span>🖼️ جلب أغلفة الكتب أونلاين تلقائياً</span></div>
+            <div class="accordion-content">
+              <div class="col-span-full">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-sm);">
+                  يمكن للأداة البحث في Google Books و Open Library عن أغلفة كتبك وحفظها مضغوطة محلياً على جهازك لتظهر بدلاً من الأغلفة الافتراضية وتعمل دون إنترنت.
+                </p>
+                <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap;">
+                  <button class="btn btn-sm btn-brass" id="btn-batch-fetch-covers">
+                    🌐 بدء فحص وجلب الأغلفة الناقصة
+                  </button>
+                  <span id="batch-covers-count-label" style="font-size: 0.8rem; color: var(--text-secondary);">
+                    (الكتب غير المغلفة حالياً: ${books.filter(b => !b.deletedAt && !b.coverImage).length})
+                  </span>
+                </div>
+                <div id="batch-covers-progress-box" style="display: none; margin-top: 14px; background: var(--bg-surface); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
+                    <span id="batch-covers-status" style="color: var(--accent-gold); font-weight: 600;">جاري التحضير...</span>
+                    <span id="batch-covers-pct">0%</span>
+                  </div>
+                  <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                    <div id="batch-covers-bar" style="width: 0%; height: 100%; background: var(--accent-gold); transition: width 0.2s;"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -642,6 +672,59 @@ export async function renderSettingsView(container, navigateTo, params = {}) {
         }
       });
     });
+
+    // Batch Cover Fetcher
+    const btnBatchCovers = container.querySelector('#btn-batch-fetch-covers');
+    if (btnBatchCovers) {
+      btnBatchCovers.addEventListener('click', async () => {
+        const missingCovers = books.filter(b => !b.deletedAt && !b.coverImage);
+        if (missingCovers.length === 0) {
+          alert('جميع الكتب في مكتبتك لديها أغلفة بالفعل!');
+          return;
+        }
+
+        if (!confirm(`سيتم فحص ${missingCovers.length} كتاباً والبحث عن أغلفتها عبر الإنترنت وحفظها على جهازك. هل تريد البدء الآن؟`)) {
+          return;
+        }
+
+        btnBatchCovers.disabled = true;
+        const progressBox = container.querySelector('#batch-covers-progress-box');
+        const statusBar = container.querySelector('#batch-covers-bar');
+        const statusText = container.querySelector('#batch-covers-status');
+        const statusPct = container.querySelector('#batch-covers-pct');
+
+        if (progressBox) progressBox.style.display = 'block';
+
+        let foundCount = 0;
+        for (let i = 0; i < missingCovers.length; i++) {
+          const b = missingCovers[i];
+          const pct = Math.round(((i + 1) / missingCovers.length) * 100);
+          if (statusBar) statusBar.style.width = `${pct}%`;
+          if (statusPct) statusPct.textContent = `${pct}% (${i + 1}/${missingCovers.length})`;
+          if (statusText) statusText.textContent = `جاري البحث: ${b.title}`;
+
+          try {
+            const author = (b.authors && b.authors.length > 0) ? b.authors[0] : '';
+            const res = await searchBookCover(b.title, author, b.isbn);
+            if (res && res.dataUrl) {
+              b.coverImage = res.dataUrl;
+              await saveBook(b);
+              foundCount++;
+            }
+          } catch (e) {
+            console.warn(`Cover fetch error for ${b.title}:`, e);
+          }
+
+          // Gentle throttle delay to respect API limits
+          await new Promise(r => setTimeout(r, 250));
+        }
+
+        if (statusText) statusText.textContent = `اكتمل! تم العثور على ${foundCount} غلاف وحفظهم محلياً.`;
+        alert(`✅ اكتملت العملية بنجاح!\nتم جلب وتخزين ${foundCount} غلاف جديد في قاعدة بياناتك المحلية.`);
+        btnBatchCovers.disabled = false;
+        renderSettingsView(container, navigateTo, { tab: 'backups' });
+      });
+    }
 
     // GitHub Sync Push
     const btnGhPush = container.querySelector('#btn-gh-push');

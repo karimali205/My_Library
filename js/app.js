@@ -229,11 +229,14 @@ function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js').then((registration) => {
+        // Check for updates on every page load
+        registration.update().catch(() => {});
+
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              showUpdateToast(newWorker);
+            if (newWorker.state === 'installed') {
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
             }
           });
         });
@@ -333,10 +336,36 @@ async function initApp() {
     newBookHeaderBtn.addEventListener('click', () => navigateTo('book-form'));
   }
 
-  // 7. Navigation clicks
+  // 7. Navigation clicks & Mobile Sidebar Drawer
+  const mobileMenuBtn = document.getElementById('btn-mobile-menu');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+  const sidebarCloseBtn = document.getElementById('btn-sidebar-close');
+
+  function openMobileSidebar() {
+    if (sidebar) sidebar.classList.add('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
+  }
+
+  function closeMobileSidebar() {
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+  }
+
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', openMobileSidebar);
+  }
+  if (sidebarCloseBtn) {
+    sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
+  }
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+  }
+
   document.querySelectorAll('.sidebar-nav .nav-link, #bottom-nav .bottom-nav-item').forEach(el => {
     el.addEventListener('click', () => {
       const route = el.dataset.route;
+      closeMobileSidebar();
       if (route) navigateTo(route);
     });
   });
